@@ -25,9 +25,12 @@ make p d =
     Player { _score         = 0
            , _snake         = Snake.spawn p d
            , _speed         = 50
-           , _bendingAngle  = Degrees 100
+           , _bendingAngle  = Degrees 180
            , _rotation      = Degrees 0
            }
+
+extend :: Player -> Player
+extend = over snake Snake.extend
 
 rotateLeft :: Player -> Player
 rotateLeft p = 

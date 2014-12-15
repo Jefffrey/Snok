@@ -38,6 +38,7 @@ onKey (Char 'a') Down = over player Player.rotateLeft
 onKey (Char 'a') Up = over player Player.rotateRight
 onKey (Char 'd') Down = over player Player.rotateRight
 onKey (Char 'd') Up = over player Player.rotateLeft
+onKey (Char 'x') Down = over player Player.extend
 onKey _ _ = id
 
 
