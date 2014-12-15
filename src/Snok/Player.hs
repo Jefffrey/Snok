@@ -24,8 +24,8 @@ make :: (Angle a) => Position -> a Unit -> Player
 make p d =
     Player { _score         = 0
            , _snake         = Snake.spawn p d
-           , _speed         = 50
-           , _bendingAngle  = Degrees 180
+           , _speed         = 80
+           , _bendingAngle  = Degrees 220
            , _rotation      = Degrees 0
            }
 
