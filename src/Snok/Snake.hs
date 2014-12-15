@@ -87,10 +87,10 @@ instance Drawable Segment where
     draw sg = 
         let r = sg ^. radius
             p = sg ^. position
-            pe = p + (fmap (r *) (sg ^. direction))
-            c = (uncurry translate) (toPair p) $ color red $ circleSolid r
-            l = color blue $ line [toPair p, toPair pe]
-        in  pictures [c, l]
+            d = sg ^. direction
+            pa = p + (fmap ((*(1/3)) . (*r)) d)
+            pb = p - (fmap ((*(1/3)) . (*r)) d)
+        in pictures . map (\v -> (uncurry translate) (toPair v) $ color blue $ circleSolid r) $ [p, pb, pa]
 
 instance Drawable Snake where
     draw s = pictures $ map draw $ s ^. segments
