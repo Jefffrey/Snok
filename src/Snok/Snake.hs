@@ -4,29 +4,27 @@ module Snok.Snake
     ( Snake
     , spawn
     , move
-    , followSegment
-    , Segment (..)
     , rotate
     , extend
     ) where
 
-import Control.Applicative (liftA2, pure)
+import Control.Applicative (pure)
 import Graphics.Gloss hiding (rotate)
-import Snok.Types (Unit, Position, Direction, Distance, Drawable, draw)
-import Snok.Math (Vec2(..), Angle(..), normalize, vecRotation, toPair, magnitude)
+import Snok.Types
+import Snok.Math
 import Snok.Utils (inPairs)
 import Control.Lens
-import Debug.Trace (traceShowId)
 
 data Segment =
     Segment { _direction :: Direction 
             , _position  :: Position
-            , _radius    :: Unit }
-    deriving (Eq, Show)
+            , _radius    :: Dimension 
+            } deriving (Eq, Show)
 makeLenses ''Segment
 
-data Snake = Snake { _segments :: [Segment] 
-                   , _segmentDistance :: Unit  -- prolly don't need it
+data Snake = Snake { _segments   :: [Segment] 
+                   , _headRadius :: Dimension
+                   , _bodyRadius :: Dimension
                    } deriving (Eq, Show)
 makeLenses ''Snake
 
@@ -34,63 +32,71 @@ originDirection :: Direction
 originDirection = Vec2 0 1
 
 toOriginDirection :: Snake -> Snake
-toOriginDirection = (segments . _head . direction) .~ originDirection
+toOriginDirection = set (segments . _head . direction) originDirection
 
 spawn :: (Angle a) => Position -> a Unit -> Snake
-spawn p a = 
-    let nd = vecRotation a originDirection
-    in  Snake [(Segment nd p 8)] 10
+spawn pos ang = Snake [(Segment dir pos hRad)] hRad bRad
+    where dir  = vecRotation ang originDirection
+          hRad = 12
+          bRad = 10
 
 extend :: Snake -> Snake
-extend s =
-    let (Just t) = s ^. segments ^? _last
-        sd = s ^. segmentDistance
-        np = liftA2 (-) (t ^. position) (fmap (* sd) (t ^. direction))
-        ns = Segment (t ^. direction) np 8
-    in  over segments (++ [ns]) s
-
+extend s = over segments (++ [newSeg]) s
+    where newSeg  = Segment dir pos rad
+          dir     = tailSeg ^. direction
+          pos     = (tailSeg ^. position) - (fmap (* rad) dir)
+          rad     = s ^. bodyRadius
+          tailSeg = s ^. segments .to last
+          
 followSegment :: Segment -> Segment -> Segment
-followSegment t s =
-    let tp = t ^. position
-        sp = s ^. position
-        tv = tp - sp
-    in  over direction (\a -> normalize (a + tv)) s
+followSegment target seg = over direction (normalize . (+ followVec)) seg
+    where followVec = (target ^. position) - (seg ^. position)
 
-applyFriction :: Distance -> Segment -> Segment -> Distance
-applyFriction d t s =
-    let id = t ^. radius + s ^. radius
-        ad = magnitude (t ^. position - s ^. position)
-    in  d * (ad / id)
+applyFriction :: Segment -> Segment -> Distance -> Distance
+applyFriction prev curr dist = dist * friction
+    where intendedDist = (prev ^. radius) + (curr ^. radius)
+          actualDist   = magnitude $ (prev ^. position) - (curr ^. position)
+          friction     = actualDist / intendedDist
 
-moveHead :: Distance -> [Segment] -> [Segment]
-moveHead d sgs =
-    let (Just h) = sgs ^? _head
-        op = h ^. position
-        ov = liftA2 (*) (h ^. direction) (pure d)
-        np = liftA2 (+) op ov
-    in  (_head . position) .~ np $ sgs
+moveSegment :: Distance -> Segment -> Segment
+moveSegment dist seg = set position newPos seg
+    where offsetVec = (seg ^. direction) * (pure dist)
+          newPos    = (seg ^. position) + offsetVec
 
-moveSegment :: Distance -> Segment -> Segment -> Segment
-moveSegment d t s =
-    let op = s ^. position
-        ov = liftA2 (*) (s ^. direction) (pure (applyFriction d t s))
-        np = liftA2 (+) op ov
-    in  position .~ np $ s
+cascadeMove :: Distance -> Segment -> Segment -> Segment
+cascadeMove dist prev curr = moveSegment frictionedDist followingSegment
+    where frictionedDist   = applyFriction prev curr dist
+          followingSegment = followSegment prev curr
 
 move :: Distance -> Snake -> Snake
-move d = over segments (scanl1 (moveSegment d) . (moveHead d) . scanl1 followSegment)
+move dist = moveRest . moveHead
+    where moveHead = over (segments . _head) (moveSegment dist)
+          moveRest = over segments (scanl1 $ cascadeMove dist)
 
 rotate :: (Angle a) => a Unit -> Snake -> Snake
 rotate a = over (segments . _head . direction) (vecRotation a)
 
-instance Drawable Segment where
-    draw sg = 
-        let r = sg ^. radius
-            p = sg ^. position
-            d = sg ^. direction
-            pa = p + (fmap ((*(1/3)) . (*r)) d)
-            pb = p - (fmap ((*(1/3)) . (*r)) d)
-        in pictures . map (\v -> (uncurry translate) (toPair v) $ color blue $ circleSolid r) $ [p, pb, pa]
+segmentRight :: Segment -> Position
+segmentRight s = (s ^. position) + fmap (* s ^. radius) (perpRight $ s ^. direction)
+
+segmentLeft :: Segment -> Position
+segmentLeft s = (s ^. position) + fmap (* s ^. radius) (perpLeft $ s ^. direction)
+
+segmentTop :: Segment -> Position
+segmentTop s = (s ^. position) + fmap (* s ^. radius) (s ^. direction)
+
+segmentBottom :: Segment -> Position
+segmentBottom s = (s ^. position) - fmap (* s ^. radius) (s ^. direction)
+
+segmentsPath :: [Segment] -> [Point]
+segmentsPath segs = 
+    map toPair . concat $
+        [ [segmentTop (head segs)]
+        , map segmentRight segs
+        , [segmentBottom (last segs)]
+        , reverse . map segmentLeft $ segs
+        ]
 
 instance Drawable Snake where
-    draw s = pictures $ map draw $ s ^. segments
+    draw s = color white $ lineLoop path
+        where path = segmentsPath (s ^. segments)

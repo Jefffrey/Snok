@@ -32,6 +32,15 @@ vecRotation ang (Vec2 a b) =
         b'          = (a * sin r) + (b * cos r)
     in  Vec2 a' b' 
 
+vecReverse :: Vec2 a -> Vec2 a
+vecReverse (Vec2 a b) = (Vec2 b a)
+
+perpLeft :: (Num a) => Vec2 a -> Vec2 a
+perpLeft (Vec2 a b) = (Vec2 (-b) a)
+
+perpRight :: (Num a) => Vec2 a -> Vec2 a
+perpRight (Vec2 a b) = (Vec2 b (-a))
+
 toPair :: Vec2 a -> (a, a)
 toPair (Vec2 a b) = (a, b)
 
