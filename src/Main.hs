@@ -14,7 +14,7 @@ startGame :: Game
 startGame = start
 
 view :: Display
-view = InWindow "Sample" (450, 300) (0, 0)
+view = InWindow "Snok 0.1.0" (450, 300) (0, 0)
 
 loop :: IO ()
 loop = play view black 70 startGame draw handle update
