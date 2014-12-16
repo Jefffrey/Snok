@@ -57,11 +57,15 @@ update dt = execState $ do
             
 onKey :: Key -> KeyState -> Game -> Game
 onKey (SpecialKey KeyEsc) Down = const (throw EndGame)
-onKey (Char 'a') Down = over player Player.rotateLeft
-onKey (Char 'a') Up = over player Player.rotateRight
-onKey (Char 'd') Down = over player Player.rotateRight
-onKey (Char 'd') Up = over player Player.rotateLeft
-onKey (Char 'x') Down = over player Player.extend
+onKey (Char c) Down
+    | c `elem` ['a', 'A'] = over player Player.rotateLeft
+    | c `elem` ['d', 'D'] = over player Player.rotateRight
+    | c `elem` ['x', 'X'] = over player Player.extend
+    | otherwise           = id
+onKey (Char c) Up
+    | c `elem` ['a', 'A'] = over player Player.rotateRight
+    | c `elem` ['d', 'D'] = over player Player.rotateLeft
+    | otherwise           = id
 onKey _ _ = id
 
 handle :: Event -> Game -> Game
