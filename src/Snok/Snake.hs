@@ -38,7 +38,7 @@ spawn :: (Angle a) => Position -> a Unit -> Snake
 spawn pos ang = Snake [(Segment dir pos hRad)] hRad bRad
     where dir  = vecRotation ang originDirection
           hRad = 12
-          bRad = 10
+          bRad = 7
 
 extend :: Snake -> Snake
 extend s = over segments (++ [newSeg]) s

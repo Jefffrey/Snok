@@ -41,6 +41,18 @@ perpLeft (Vec2 a b) = (Vec2 (-b) a)
 perpRight :: (Num a) => Vec2 a -> Vec2 a
 perpRight (Vec2 a b) = (Vec2 b (-a))
 
+topVec :: (Num a) => Vec2 a
+topVec = Vec2 0 1
+
+rightVec :: (Num a) => Vec2 a
+rightVec = Vec2 1 0
+
+bottomVec :: (Num a) => Vec2 a
+bottomVec = Vec2 0 (-1)
+
+leftVec :: (Num a) => Vec2 a
+leftVec = Vec2 (-1) 0
+
 toPair :: Vec2 a -> (a, a)
 toPair (Vec2 a b) = (a, b)
 
