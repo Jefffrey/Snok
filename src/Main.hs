@@ -1,20 +1,25 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module Main where
 
-import Graphics.Gloss
 import Control.Exception (catch)
-import Snok.Classes (draw)
-import Snok.Game (Except(..), Game, update, start, handle)
-import Graphics.Gloss.Interface.Pure.Game
+import Snok.Game (Except(..), Game, update, start, render)
+import Snok.Input (inputSignal)
+import FRP.Helm.Graphics (Element)
+import FRP.Helm (Signal, (<~), (~~), foldp, run, defaultConfig)
+import qualified FRP.Helm.Window as W
+import qualified FRP.Helm.Time as T
+import qualified FRP.Helm.Graphics as G
+import qualified FRP.Helm.Color as C
+import FRP.Helm.Text (asText)
 
-view :: Display
-view = InWindow "Snok 0.2.0" (450, 300) (0, 0)
+logic :: Game -> Signal Game
+logic g = foldp update g inputSignal
 
-loop :: IO ()
-loop = do
-    game <- start
-    play view black 70 game draw handle update
+view :: Game -> Signal Element
+view g = render <~ W.dimensions ~~ logic g
 
 main :: IO ()
-main = catch loop (\EndGame -> return ())
+main = do
+    game <- start
+    catch
+        (run defaultConfig (view game))
+        (\EndGame -> return ())

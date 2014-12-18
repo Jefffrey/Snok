@@ -9,12 +9,13 @@ module Snok.Snake
     ) where
 
 import Control.Applicative (pure)
-import Graphics.Gloss hiding (rotate)
 import Snok.Types
 import Snok.Classes
 import Snok.Math
 import Snok.Utils (inPairs)
 import Control.Lens
+import qualified FRP.Helm.Graphics as G
+import qualified FRP.Helm.Color as C
 import qualified Snok.Box as Box
 
 data Segment =
@@ -79,18 +80,18 @@ rotate :: (Angle a) => a Unit -> Snake -> Snake
 rotate a = over (segments . _head . direction) (vecRotation a)
 
 segmentRight :: Segment -> Position
-segmentRight s = (s ^. position) + fmap (* s ^. radius) (perpRight $ s ^. direction)
+segmentRight s = s^.position + fmap (* s^.radius) (perpRight $ s^.direction)
 
 segmentLeft :: Segment -> Position
-segmentLeft s = (s ^. position) + fmap (* s ^. radius) (perpLeft $ s ^. direction)
+segmentLeft s = s^.position + fmap (* s^.radius) (perpLeft $ s^.direction)
 
 segmentTop :: Segment -> Position
-segmentTop s = (s ^. position) + fmap (* s ^. radius) (s ^. direction)
+segmentTop s = s^.position + fmap (* s^.radius) (s^.direction)
 
 segmentBottom :: Segment -> Position
-segmentBottom s = (s ^. position) - fmap (* s ^. radius) (s ^. direction)
+segmentBottom s = s^.position - fmap (* s^.radius) (s^.direction)
 
-segmentsPath :: [Segment] -> [Point]
+segmentsPath :: [Segment] -> G.Path
 segmentsPath segs = 
     map toPair . concat $
         [ [segmentTop (head segs)]
@@ -100,9 +101,9 @@ segmentsPath segs =
         ]
 
 instance Drawable Snake where
-    draw s = color white $ lineLoop path
+    draw s = G.filled C.white $ G.polygon path
         where path = segmentsPath (s ^. segments)
 
 instance Collidable Snake where
     collisionBox s = Box.Circle (h ^. position) (h ^. radius)
-        where h = s ^. segments .to head
+        where h = s^.segments.to head

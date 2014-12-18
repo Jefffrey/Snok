@@ -19,8 +19,8 @@ executable Snok
   main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8,
-                       gloss,
+  build-depends:       base >= 4.7 && < 4.8,
+                       helm >= 0.7 && < 0.8,
                        lens,
                        random,
                        mtl

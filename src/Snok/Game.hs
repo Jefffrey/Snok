@@ -5,7 +5,7 @@ module Snok.Game
     , Except(..)
     , start
     , update
-    , handle
+    , render
     ) where
 
 import Data.Typeable
@@ -13,14 +13,15 @@ import Control.Exception (Exception, throw)
 import Snok.Types
 import Snok.Classes
 import Snok.Math
+import Snok.Input
 import Snok.Player (Player)
 import Control.Lens
-import Graphics.Gloss.Interface.Pure.Game
-import Graphics.Gloss
 import System.Random (StdGen, getStdGen, randomR)
 import Control.Monad.State
 import qualified Snok.Box as Box
 import qualified Snok.Player as Player
+import qualified FRP.Helm.Graphics as G
+import qualified FRP.Helm.Color as C
 
 data Item
     = Apple 
@@ -39,7 +40,7 @@ data Game = Game { _player :: Player
 makeLenses ''Game
 
 instance Drawable Item where
-    draw (Apple p r) = color red $ circle r
+    draw (Apple p r) = G.filled C.red $ G.circle r
 
 instance Collidable Item where
     collisionBox a = Box.Circle (a ^. position) (a ^. radius)
@@ -55,30 +56,16 @@ start = do
              , _chaos = ranGen
              }
 
-update :: Float -> Game -> Game
-update dt = execState $ do
-    player %= Player.update dt
-            
-onKey :: Key -> KeyState -> Game -> Game
-onKey (SpecialKey KeyEsc) Down = const (throw EndGame)
-onKey (Char c) Down
-    | c `elem` ['a', 'A'] = over player Player.rotateLeft
-    | c `elem` ['d', 'D'] = over player Player.rotateRight
-    | c `elem` ['x', 'X'] = over player Player.extend
-    | otherwise           = id
-onKey (Char c) Up
-    | c `elem` ['a', 'A'] = over player Player.rotateRight
-    | c `elem` ['d', 'D'] = over player Player.rotateLeft
-    | otherwise           = id
-onKey _ _ = id
+update :: Input -> Game -> Game
+update i = execState $ do
+    player %= Player.update i 
 
-handle :: Event -> Game -> Game
-handle (EventKey k s _ _) = onKey k s
-handle _ = id
+render :: (Int, Int) -> Game -> G.Element
+render (w, h) g = G.centeredCollage w h [draw g]
 
 instance Drawable Game where
     draw g = 
-        pictures $ concat
+        G.group $ concat
             [ [draw (g ^. player)]
             , map draw (g ^. items)
             ]

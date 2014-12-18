@@ -2,11 +2,11 @@ module Snok.Classes where
 
 import Snok.Box (Box)
 import Snok.Math (distance)
-import Graphics.Gloss
+import FRP.Helm.Graphics
 import qualified Snok.Box as Box
 
 class Drawable a where
-    draw :: a -> Picture
+    draw :: a -> Form
 
 class Collidable a where
     collisionBox :: a -> Box
