@@ -11,45 +11,49 @@ module Snok.Game
 import Data.Typeable
 import Control.Exception (Exception, throw)
 import Snok.Types
+import Snok.Classes
 import Snok.Math
 import Snok.Player (Player)
-import Snok.Apple (Apple)
 import Control.Lens
 import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss
 import System.Random (StdGen, getStdGen, randomR)
 import Control.Monad.State
+import qualified Snok.Box as Box
 import qualified Snok.Player as Player
-import qualified Snok.Apple as Apple
+
+data Item
+    = Apple 
+        { _position :: Position
+        , _radius   :: Dimension
+        } 
+    deriving (Eq, Show)
+makeLenses ''Item
 
 data Except = EndGame deriving (Show, Typeable)
-instance Exception Except 
 
 data Game = Game { _player :: Player
-                 , _apples :: [Apple]
+                 , _items :: [Item]
                  , _chaos :: StdGen
-                 , _radius :: Distance
                  } deriving (Show)
 makeLenses ''Game
+
+instance Drawable Item where
+    draw (Apple p r) = color red $ circle r
+
+instance Collidable Item where
+    collisionBox a = Box.Circle (a ^. position) (a ^. radius)
+
+instance Exception Except 
 
 start :: IO Game
 start = do
     ranGen <- getStdGen
-    return $ spawnNewApple $
+    return $
         Game { _player = Player.make (Vec2 0 0) (Degrees 0)
-             , _apples = []
+             , _items = []
              , _chaos = ranGen
-             , _radius = 100
              }
-
-spawnNewApple :: Game -> Game
-spawnNewApple = execState $ do
-    g <- get
-    let gen = g ^. chaos
-    let rad = g ^. radius
-    let (appX, newGen) = randomR (-rad, rad) gen
-    let (appY, newGen') = randomR (-rad, rad) newGen
-    chaos .= newGen'
-    apples .= [Apple.spawn (Vec2 appX appY)]
 
 update :: Float -> Game -> Game
 update dt = execState $ do
@@ -76,5 +80,5 @@ instance Drawable Game where
     draw g = 
         pictures $ concat
             [ [draw (g ^. player)]
-            , map draw (g ^. apples)
+            , map draw (g ^. items)
             ]

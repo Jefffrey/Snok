@@ -4,7 +4,8 @@ module Snok.Player where
 
 import Snok.Math (Angle, Degrees(..))
 import Snok.Snake (Snake)
-import Snok.Types (Position, Unit, Distance, Drawable, draw)
+import Snok.Types (Position, Unit, Distance)
+import Snok.Classes (Drawable, draw)
 import Control.Lens
 import qualified Snok.Snake as Snake
 

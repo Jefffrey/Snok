@@ -4,7 +4,7 @@ module Main where
 
 import Graphics.Gloss
 import Control.Exception (catch)
-import Snok.Types (draw)
+import Snok.Classes (draw)
 import Snok.Game (Except(..), Game, update, start, handle)
 import Graphics.Gloss.Interface.Pure.Game
 

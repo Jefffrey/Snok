@@ -59,6 +59,9 @@ toPair (Vec2 a b) = (a, b)
 fromPair :: (a, a) -> Vec2 a
 fromPair (a, b) = Vec2 a b
 
+distance :: (Floating a) => Vec2 a -> Vec2 a -> a
+distance a b = magnitude (a - b) 
+
 data Radians a = Radians a deriving (Eq, Show)
 data Degrees a = Degrees a deriving (Eq, Show)
 

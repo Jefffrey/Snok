@@ -11,9 +11,11 @@ module Snok.Snake
 import Control.Applicative (pure)
 import Graphics.Gloss hiding (rotate)
 import Snok.Types
+import Snok.Classes
 import Snok.Math
 import Snok.Utils (inPairs)
 import Control.Lens
+import qualified Snok.Box as Box
 
 data Segment =
     Segment { _direction :: Direction 
@@ -100,3 +102,7 @@ segmentsPath segs =
 instance Drawable Snake where
     draw s = color white $ lineLoop path
         where path = segmentsPath (s ^. segments)
+
+instance Collidable Snake where
+    collisionBox s = Box.Circle (h ^. position) (h ^. radius)
+        where h = s ^. segments .to head
