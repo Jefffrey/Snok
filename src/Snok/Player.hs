@@ -3,7 +3,7 @@
 module Snok.Player where
 
 import Snok.Math (Angle, Degrees(..))
-import Snok.Snake (Snake)
+import Snok.Snake (Snake, segments) -- to remove segments from export
 import Snok.Input
 import Snok.Types (Position, Unit, Distance)
 import Snok.Classes (Drawable, draw)
@@ -11,7 +11,6 @@ import Control.Lens
 import FRP.Helm.Time (second)
 import qualified FRP.Helm.Keyboard as K
 import qualified Snok.Snake as Snake
-import Debug.Trace (traceShowId)
 
 type Speed      = Distance -- per second
 type Rotation   = Degrees Unit -- per second
@@ -28,7 +27,7 @@ make :: (Angle a) => Position -> a Unit -> Player
 make p d =
     Player { _score         = 0
            , _snake         = Snake.spawn p d
-           , _speed         = 120
+           , _speed         = 50
            , _bendingAngle  = Degrees 220
            }
 
@@ -60,7 +59,7 @@ applyExtension i
     | otherwise = id
 
 update :: Input -> Player -> Player 
-update i = applyMovement i . applyRotation i . applyExtension i
+update i s = applyMovement i . applyRotation i . applyExtension i $ s
 
 instance Drawable Player where
     draw p = draw $ p^.snake

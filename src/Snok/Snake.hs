@@ -6,6 +6,7 @@ module Snok.Snake
     , move
     , rotate
     , extend
+    , segments
     ) where
 
 import Control.Applicative (pure)
@@ -14,96 +15,96 @@ import Snok.Classes
 import Snok.Math
 import Snok.Utils (inPairs)
 import Control.Lens
+import Prelude hiding (span)
+import Debug.Trace 
 import qualified FRP.Helm.Graphics as G
 import qualified FRP.Helm.Color as C
-import qualified Snok.Box as Box
 
 data Segment =
-    Segment { _direction :: Direction 
-            , _position  :: Position
-            , _radius    :: Dimension 
-            } deriving (Eq, Show)
+    Segment {
+        _direction :: Direction,
+        _position  :: Position
+    } deriving (Eq, Show)
 makeLenses ''Segment
 
-data Snake = Snake { _segments   :: [Segment] 
-                   , _headRadius :: Dimension
-                   , _bodyRadius :: Dimension
-                   } deriving (Eq, Show)
+data Snake =
+    Snake { 
+        _segments   :: [Segment],
+        _span       :: Distance
+    } deriving (Eq, Show)
 makeLenses ''Snake
 
 originDirection :: Direction
 originDirection = Vec2 0 1
 
 toOriginDirection :: Snake -> Snake
-toOriginDirection = set (segments . _head . direction) originDirection
+toOriginDirection = set (segments._head.direction) originDirection
 
 spawn :: (Angle a) => Position -> a Unit -> Snake
-spawn pos ang = Snake [(Segment dir pos hRad)] hRad bRad
-    where dir  = vecRotation ang originDirection
-          hRad = 12
-          bRad = 7
+spawn pos ang = extend $ extend $ extend $ Snake [(Segment dir pos)] 10
+    where dir = vecRotation ang originDirection
+
+spannedDir :: Snake -> Direction -> Direction
+spannedDir s = fmap (* s^.span)
 
 extend :: Snake -> Snake
 extend s = over segments (++ [newSeg]) s
-    where newSeg  = Segment dir pos rad
-          dir     = tailSeg ^. direction
-          pos     = (tailSeg ^. position) - (fmap (* rad) dir)
-          rad     = s ^. bodyRadius
-          tailSeg = s ^. segments .to last
-          
-followSegment :: Segment -> Segment -> Segment
-followSegment target seg = over direction (normalize . (+ followVec)) seg
-    where followVec = (target ^. position) - (seg ^. position)
-
-applyFriction :: Segment -> Segment -> Distance -> Distance
-applyFriction prev curr dist = dist * friction
-    where intendedDist = (prev ^. radius) + (curr ^. radius)
-          actualDist   = magnitude $ (prev ^. position) - (curr ^. position)
-          friction     = actualDist / intendedDist
+    where newSeg  = Segment dir pos
+          dir     = tailSeg^.direction
+          pos     = tailSeg^.position - spannedDir s dir
+          tailSeg = s^.segments.to last
 
 moveSegment :: Distance -> Segment -> Segment
 moveSegment dist seg = set position newPos seg
-    where offsetVec = (seg ^. direction) * (pure dist)
-          newPos    = (seg ^. position) + offsetVec
+    where newPos    = (seg^.position) + offsetVec
+          offsetVec = (seg^.direction) * (pure dist)
 
-cascadeMove :: Distance -> Segment -> Segment -> Segment
-cascadeMove dist prev curr = moveSegment frictionedDist followingSegment
-    where frictionedDist   = applyFriction prev curr dist
+followSegment :: Segment -> Segment -> Segment
+followSegment target seg = over direction (bisectVec followVec) seg
+    where followVec = (target^.position) - (seg^.position)
+
+applyFriction :: Distance -> Segment -> Segment -> Distance -> Distance
+applyFriction spn prev curr dist = dist * friction
+    where intendedDist = spn * 2
+          actualDist   = magnitude $ prev^.position - curr^.position
+          friction     = actualDist / intendedDist
+
+cascadeMove :: Distance -> Distance -> Segment -> Segment -> Segment
+cascadeMove spn dist prev curr = moveSegment frictionedDist followingSegment
+    where frictionedDist   = applyFriction spn prev curr dist
           followingSegment = followSegment prev curr
 
 move :: Distance -> Snake -> Snake
-move dist = moveRest . moveHead
-    where moveHead = over (segments . _head) (moveSegment dist)
-          moveRest = over segments (scanl1 $ cascadeMove dist)
+move dist s = traceShow (s^.segments.to (!!1).position) $ moveRest . moveHead $ s
+    where moveHead = over (segments._head) (moveSegment dist)
+          moveRest = over segments (scanl1 $ cascadeMove spn dist)
+          spn      = s^.span
 
 rotate :: (Angle a) => a Unit -> Snake -> Snake
-rotate a = over (segments . _head . direction) (vecRotation a)
+rotate a = over (segments._head.direction) (vecRotation a)
 
-segmentRight :: Segment -> Position
-segmentRight s = s^.position + fmap (* s^.radius) (perpRight $ s^.direction)
-
-segmentLeft :: Segment -> Position
-segmentLeft s = s^.position + fmap (* s^.radius) (perpLeft $ s^.direction)
-
-segmentTop :: Segment -> Position
-segmentTop s = s^.position + fmap (* s^.radius) (s^.direction)
-
-segmentBottom :: Segment -> Position
-segmentBottom s = s^.position - fmap (* s^.radius) (s^.direction)
-
-segmentsPath :: [Segment] -> G.Path
-segmentsPath segs = 
-    map toPair . concat $
-        [ [segmentTop (head segs)]
-        , map segmentRight segs
-        , [segmentBottom (last segs)]
-        , reverse . map segmentLeft $ segs
+segmentShape :: Unit -> Unit -> Segment -> G.Shape
+segmentShape w h seg = 
+    G.polygon . map toPair $
+        [ r + o
+        , r - o
+        , l - o
+        , l + o
         ]
+    where o = fmap (* (h/2)) d
+          r = fmap (* (w/2)) . perpRight $ d
+          l = fmap (* (w/2)) . perpLeft $ d
+          d = seg^.direction
+
+drawSegment :: Int -> (Int, Segment) -> G.Form
+drawSegment l (i, seg) = 
+    G.move (seg^.position.to toPair) $ G.group
+        [ G.filled C.white shp
+        , G.outlined (G.solid C.grey) shp
+        ]
+    where shp = segmentShape (max - ((max - min) * (fromIntegral i / fromIntegral l))) 10 seg
+          min = 10
+          max = 30
 
 instance Drawable Snake where
-    draw s = G.filled C.white $ G.polygon path
-        where path = segmentsPath (s ^. segments)
-
-instance Collidable Snake where
-    collisionBox s = Box.Circle (h ^. position) (h ^. radius)
-        where h = s^.segments.to head
+    draw s = G.group $ map (drawSegment (length (s^.segments))) $ zip [0..] (s^.segments)
