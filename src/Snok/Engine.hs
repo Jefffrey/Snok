@@ -7,9 +7,11 @@ import qualified Graphics.UI.GLFW as GLFW
 withEngine :: IO () -> IO ()
 withEngine action = do
     GLFW.setErrorCallback (Just errorCallback)
+    logDebug "engine callbacks set"
     successfulInit <- GLFW.init
     if successfulInit 
     then do
+        logDebug "engine initialized"
         action
         GLFW.terminate
         exitSuccess

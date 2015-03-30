@@ -45,13 +45,14 @@ windowLoop window action = do
         GLFW.swapBuffers window
         windowLoop window action
 
-withWindow :: Window -> IO () -> IO ()
-withWindow (Window title (w, h)) action = do
+withWindow :: Window -> IO a -> (a -> IO ()) -> IO ()
+withWindow (Window title (w, h)) init action = do
     GLFW.windowHint $ GLFW.WindowHint'OpenGLDebugContext True
     GLFW.windowHint $ GLFW.WindowHint'ContextVersionMajor 3
     GLFW.windowHint $ GLFW.WindowHint'ContextVersionMinor 3
     GLFW.windowHint $ GLFW.WindowHint'OpenGLForwardCompat True
     GLFW.windowHint $ GLFW.WindowHint'OpenGLProfile GLFW.OpenGLProfile'Core
+    logDebug "window hints set"
     events  <- (newTQueueIO :: IO EventQueue)
     win     <- GLFW.createWindow w h title Nothing Nothing
     case win of
@@ -59,9 +60,16 @@ withWindow (Window title (w, h)) action = do
             GLFW.terminate
             logError "window not initialized"
         Just window -> do
-            windowSizeCallback window w h
+            logDebug "window created"
             GLFW.makeContextCurrent $ Just window
-            GLFW.setKeyCallback window $ Just $ keyCallback events
+            logDebug "context selected"
+            windowSizeCallback window w h
+            logDebug "initial window resize callback"
+            GLFW.setKeyCallback window $ Just (keyCallback events)
             GLFW.setWindowSizeCallback window $ Just windowSizeCallback
-            windowLoop window action
+            logDebug "window callbacks set"
+            st <- init
+            logDebug "drawing state initialized"
+            windowLoop window (action st)
             GLFW.destroyWindow window
+            logDebug "window destroyed"
