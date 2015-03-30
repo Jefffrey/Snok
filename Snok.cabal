@@ -19,7 +19,9 @@ executable Snok
     main-is:             Main.hs
     build-depends:       base >= 4.7 && < 4.8,
                          GLFW-b >= 1.4 && < 1.5,
-                         OpenGL >= 2.9.1 && < 2.10,
-                         stm >= 2.4 && < 2.5
+                         OpenGL >= 2.9 && < 2.10,
+                         stm >= 2.4 && < 2.5,
+                         bytestring >= 0.10 && < 0.11,
+                         text >= 1.1 && < 1.2
     hs-source-dirs:      src
     default-language:    Haskell2010
