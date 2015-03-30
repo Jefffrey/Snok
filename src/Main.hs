@@ -7,7 +7,8 @@ import qualified Graphics.Rendering.OpenGL as GL
 newtype Game = Game ()
 
 instance Initializable Game where
-    initialize _ = return ()
+    initialize _ =
+        GL.clearColor $= GL.Color4 1 0 0 1
 
 instance Drawable Game where
     draw _ =
