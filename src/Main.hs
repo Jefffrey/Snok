@@ -23,24 +23,24 @@ initGame = return $ Game ()
 newtype Game = Game ()
 instance Drawable Game where
     prepare (Game ()) = do
+        GL.clearColor $= GL.Color4 0.0 0.0 0.0 1.0
         GL.blend $= GL.Enabled
         GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
-        logDebug "before error"
         vs <- GLU.loadShader GL.VertexShader $ shaderPath </> "a.vs"
-        logDebug "after error"
         fs <- GLU.loadShader GL.FragmentShader $ shaderPath </> "a.fs"
         p <- GLU.linkShaderProgram [vs, fs]
         Program
             <$> return p
             <*> GL.get (GL.attribLocation p "vPosition")
             <*> GLU.makeBuffer GL.ArrayBuffer vertices
+            <*> GL.genObjectName -- vao
 
-    draw (Game ()) (Program program attrib buf) = do
-        GL.clearColor $= GL.Color4 0.0 0.0 0.0 1.0
+    draw (Game ()) (Program program attrib vbo vao) = do
         GL.clear [GL.ColorBuffer]
         GL.currentProgram $= Just program
         GL.vertexAttribArray attrib $= GL.Enabled
-        GL.bindBuffer GL.ArrayBuffer $= Just buf
+        GL.bindBuffer GL.ArrayBuffer $= Just vbo
+        GL.bindVertexArrayObject $= Just vao
         GL.vertexAttribPointer attrib $=
             (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 GLU.offset0)
         GL.drawArrays GL.Triangles 0 3 -- 3 is the number of vertices

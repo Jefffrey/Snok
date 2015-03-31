@@ -23,11 +23,8 @@ data Event
 type EventQueue = TQueue Event
 
 windowSizeCallback :: GLFW.WindowSizeCallback
-windowSizeCallback _ w h = do
+windowSizeCallback _ w h =
     GL.viewport $= (GL.Position 0 0, GL.Size (fromIntegral w) (fromIntegral h))
-    GL.matrixMode $= GL.Projection
-    GL.loadIdentity
-    GL.ortho2D 0 (realToFrac w) (realToFrac h) 0
 
 keyCallback :: EventQueue -> GLFW.KeyCallback
 keyCallback events _ key _ state _ =
