@@ -24,27 +24,34 @@ newtype Game = Game ()
 instance Drawable Game where
     prepare (Game ()) = do
         GL.clearColor $= GL.Color4 0.0 0.0 0.0 1.0
-        GL.blend $= GL.Enabled
-        GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
         vs <- GLU.loadShader GL.VertexShader $ shaderPath </> "a.vs"
         fs <- GLU.loadShader GL.FragmentShader $ shaderPath </> "a.fs"
         p <- GLU.linkShaderProgram [vs, fs]
         Program
             <$> return p
-            <*> GL.get (GL.attribLocation p "vPosition")
             <*> GLU.makeBuffer GL.ArrayBuffer vertices
             <*> GL.genObjectName -- vao
 
-    draw (Game ()) (Program program attrib vbo vao) = do
+    draw (Game ()) (Program program vbo vao) = do
+        GL.blend $= GL.Enabled
+        GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
         GL.clear [GL.ColorBuffer]
         GL.currentProgram $= Just program
-        GL.vertexAttribArray attrib $= GL.Enabled
         GL.bindBuffer GL.ArrayBuffer $= Just vbo
         GL.bindVertexArrayObject $= Just vao
-        GL.vertexAttribPointer attrib $=
-            (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 GLU.offset0)
+        frustrumScaleAttr <- GL.get (GL.uniformLocation program "ng_FrustumScale")
+        zNearAttr <- GL.get (GL.uniformLocation program "ng_ZNear")
+        zFarAttr <- GL.get (GL.uniformLocation program "ng_ZFar")
+        posAttr <- GL.get (GL.attribLocation program "ng_Position")
+        colorAttr <- GL.get (GL.uniformLocation program "ng_Color")
+        GL.uniform frustrumScaleAttr $= GL.Index1 (1.0 :: GL.GLfloat)
+        GL.uniform zNearAttr $= GL.Index1 (1.0 :: GL.GLfloat)
+        GL.uniform zFarAttr $= GL.Index1 (3.0 :: GL.GLfloat)
+        GL.uniform colorAttr $= GL.Vertex4 (1.0 :: GL.GLfloat) 0.0 0.0 1.0
+        GL.vertexAttribArray posAttr $= GL.Enabled
+        GL.vertexAttribPointer posAttr $= (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 GLU.offset0)
         GL.drawArrays GL.Triangles 0 3 -- 3 is the number of vertices
-        GL.vertexAttribArray attrib $= GL.Disabled
+        GL.vertexAttribArray posAttr $= GL.Disabled
 
 main :: IO ()
 main = initGame >>= play

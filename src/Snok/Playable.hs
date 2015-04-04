@@ -4,7 +4,7 @@ import           Snok.Engine
 import           Snok.Window
 import qualified Graphics.Rendering.OpenGL as GL
 
-data Program = Program GL.Program GL.AttribLocation GL.BufferObject GL.VertexArrayObject
+data Program = Program GL.Program GL.BufferObject GL.VertexArrayObject
 type DrawState = Program
 
 class Drawable t where
