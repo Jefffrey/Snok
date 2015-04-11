@@ -42,9 +42,11 @@ instance Drawable Game where
         frustrumScaleAttr <- GL.get (GL.uniformLocation program "ng_FrustumScale")
         zNearAttr <- GL.get (GL.uniformLocation program "ng_ZNear")
         zFarAttr <- GL.get (GL.uniformLocation program "ng_ZFar")
+        offset <- GL.get (GL.uniformLocation program "ng_Offset")
         posAttr <- GL.get (GL.attribLocation program "ng_Position")
         colorAttr <- GL.get (GL.uniformLocation program "ng_Color")
         GL.uniform frustrumScaleAttr $= GL.Index1 (1.0 :: GL.GLfloat)
+        GL.uniform offset $= GL.Vertex2 (0.50 :: GL.GLfloat) (-0.25)
         GL.uniform zNearAttr $= GL.Index1 (1.0 :: GL.GLfloat)
         GL.uniform zFarAttr $= GL.Index1 (3.0 :: GL.GLfloat)
         GL.uniform colorAttr $= GL.Vertex4 (1.0 :: GL.GLfloat) 0.0 0.0 1.0
