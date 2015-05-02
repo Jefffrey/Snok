@@ -1,5 +1,5 @@
 *.swp
 .DS_Store
-.cabal-sandbox/
-cabal.sandbox.config
-dist/
+elm.js
+elm-package.json
+elm-stuff/
