@@ -1,6 +1,5 @@
 import Graphics.Element exposing (..)
-
+import Snok.Vec
 
 main : Element
-main =
-  show "Hello, World!"
+main = show "Ok"
