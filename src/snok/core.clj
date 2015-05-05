@@ -14,8 +14,6 @@
 (defn -main []
   (show! 
     (frame 
-      :title "HI!" 
-      :content "I'm a label!" 
-      :width 500 :height 600)))
-
-(-main)
+      :title "Snok" 
+      :width 500 :height 200
+      :on-close :exit)))
