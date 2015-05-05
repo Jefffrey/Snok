@@ -26,7 +26,7 @@
     (show! 
       (frame 
         :title "Snok" 
-        :width 600 :height 300
+        :width 900 :height 400
         :content canv
         :on-close :exit
         :resizable? false))))
@@ -36,4 +36,4 @@
   (main-loop 
     update-game 
     draw-game
-    (new Snake [[150 100] [30 123] [120 90]] [0 1] 10)))
+    (new Snake [[150 100] [200 145]] [0 1] 10)))

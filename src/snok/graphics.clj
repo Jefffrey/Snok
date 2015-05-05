@@ -1,19 +1,22 @@
 (ns snok.graphics
-  (:use [seesaw.graphics :only (draw line stroke style)]))
-
-(defmacro dbg[x] `(let [x# ~x] (println "dbg:" '~x "=" x#) x#))
+  (:use [seesaw.graphics :only (draw line circle stroke style)]))
 
 ; Graphical configurations.
-(def snake-stroke
+(def snake-radius 10)
+(def body-stroke
   (stroke 
-    :width 10
+    :width snake-radius
     :cap :round
     :join :round))
 
-(def snake-style 
+(def body-style 
   (style 
-    :foreground :blue 
-    :stroke snake-stroke))
+    :foreground :grey 
+    :stroke body-stroke))
+
+(def head-style
+  (style
+    :background :blue))
 
 ; Draws the line that represents
 ; the snake.
@@ -21,9 +24,11 @@
   (doall 
     (map
       (fn [[ax ay] [bx by]]
-        (draw g (line ax ay bx by) snake-style))
+        (draw g (line ax ay bx by) body-style))
       (:segments snake)
-      (into [] (rest (:segments snake))))))
+      (into [] (rest (:segments snake)))))
+  (let [[hx hy] (first (:segments snake))]
+    (draw g (circle hx hy (/ snake-radius 2)) head-style)))
 
 ; Forwards the drawing of the snake.
 (defn draw-game [g snake]
