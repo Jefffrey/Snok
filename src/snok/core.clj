@@ -1,5 +1,9 @@
 (ns snok.core
-  (:use seesaw.core
+  (:use [seesaw.dev]
+        [seesaw.core]
+        [seesaw.graphics]
+        [seesaw.behave]
+        [seesaw.border]
         snok.vector))
 
 (defrecord snake
@@ -12,8 +16,18 @@
    apples])   ; list of points
 
 (defn -main []
-  (show! 
-    (frame 
-      :title "Snok" 
-      :width 500 :height 200
-      :on-close :exit)))
+  (let [canv (canvas :background :red)
+        tim (timer 
+          (fn [[c b]] 
+            (if b
+              (config! c :background :black)
+              (config! c :background :red))
+            [c (not b)])
+          :initial-value [canv true]
+          :delay 1000)]
+    (show! 
+      (frame 
+        :title "Snok" 
+        :width 500 :height 200
+        :content canv
+        :on-close :exit))))
