@@ -1,7 +1,15 @@
 (ns snok.graphics
-  (:use [seesaw.graphics :only (draw circle style)]))
+  (:use [seesaw.graphics :only (draw polygon style)]))
 
-(defn draw-game [g s] 
-  (draw g 
-    (circle 100 100 s)
-    (style :foreground :blue :background :green :font :monospace)))
+(defn make-polygon [snake]
+  (let [segs (:segments snake)]
+    segs)) ; todo
+
+(defn draw-snake [g snake]
+  (draw g
+      (polygon [10 10] [300 200] [100 400])
+      (style :foreground :blue :background :green :font :monospace)))
+
+; Forwards the drawing of the snake.
+(defn draw-game [g snake]
+  (draw-snake g snake))

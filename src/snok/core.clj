@@ -2,7 +2,8 @@
   (:use [seesaw.core :as sc]
         [seesaw.graphics :as sg]
         [snok.logic :only (update-game)]
-        [snok.graphics :only (draw-game)]))
+        [snok.graphics :only (draw-game)])
+  (:import [snok.types snake]))
 
 ; Creates the frame and calls `update-fn` every once in a while
 ; passing the delta time and the current state and expects the new state
@@ -13,7 +14,10 @@
         state (atom ini-state)
         canv (canvas
                :background :black
-               :paint (fn [_ gcxt] (draw-fn gcxt @state)))
+               :paint 
+                (fn [_ gcxt]
+                  (anti-alias gcxt)
+                  (draw-fn gcxt @state)))
         tmr (timer ; update & draw timer
              (fn [_] 
                (swap! state (partial update-fn delta))
@@ -32,4 +36,4 @@
   (main-loop 
     update-game 
     draw-game
-    0))
+    (new snake [[34 56] [38 63] [45 23]] [0 1] 10)))

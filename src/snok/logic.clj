@@ -1,3 +1,4 @@
-(ns snok.logic)
+(ns snok.logic
+  (:use snok.types))
 
-(defn update-game [d s] (+ s 1))
+(defn update-game [d s] s)
