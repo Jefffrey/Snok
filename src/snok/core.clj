@@ -3,7 +3,7 @@
         [seesaw.graphics :as sg]
         [snok.logic :only (update-game)]
         [snok.graphics :only (draw-game)])
-  (:import [snok.types snake]))
+  (:import [snok.types Snake]))
 
 ; Creates the frame and calls `update-fn` every once in a while
 ; passing the delta time and the current state and expects the new state
@@ -36,4 +36,4 @@
   (main-loop 
     update-game 
     draw-game
-    (new snake [[34 56] [38 63] [45 23]] [0 1] 10)))
+    (new Snake [[150 100] [30 123] [120 90]] [0 1] 10)))

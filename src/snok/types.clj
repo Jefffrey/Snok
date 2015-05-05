@@ -1,11 +1,11 @@
 (ns snok.types)
 
-(defrecord snake
+(defrecord Snake
   [segments   ; list of points
    direction  ; versor
    speed])    ; speed in blocks/s
 
-(defrecord game
+(defrecord Game
   [score      ; integer
    snake      ; snake record
    apples])   ; list of points
