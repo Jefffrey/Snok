@@ -30,7 +30,7 @@
 (defn perp-left [[x y]] (normalized [(- y) x]))
 
 ; Rotates the vector, keeping its magnitude.
-(defn rotate [ang [x y]]
+(defn rotated [ang [x y]]
   (let [xn (- (* x (Math/cos ang)) (* y (Math/sin ang)))
         yn (+ (* x (Math/sin ang)) (* y (Math/cos ang)))]
     [xn yn]))
