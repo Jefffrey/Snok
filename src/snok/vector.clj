@@ -7,7 +7,7 @@
 (defn vector-sum [[ax ay] [bx by]] [(+ ax bx) (+ ay by)])
 (defn vector-sub [[ax ay] [bx by]] [(- ax bx) (- ay by)])
 (defn vector-mul [[x y] k] [(* x k) (* y k)])
-(defn vector-div [[x y] k] [(/ x k) (/ y k)])
+(defn vector-div [[x y] k] [(double (/ x k)) (double (/ y k))])
 
 ; Finds the norm of a vector.
 (defn norm [[x y]]
@@ -28,3 +28,9 @@
 ; and to the left.
 (defn perp-right [[x y]] (normalized [y (- x)]))
 (defn perp-left [[x y]] (normalized [(- y) x]))
+
+; Rotates the vector, keeping its magnitude.
+(defn rotate [ang [x y]]
+  (let [xn (- (* x (Math/cos ang)) (* y (Math/sin ang)))
+        yn (+ (* x (Math/sin ang)) (* y (Math/cos ang)))]
+    [xn yn]))
