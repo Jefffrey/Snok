@@ -1,5 +1,6 @@
 (ns snok.game
-  (:require [snok.snake :as s]))
+  (:require [snok.snake :as s])
+  (:use [snok.debug :only (dbg)]))
 
 ; ---------------------------------------
 ; Records
@@ -16,11 +17,12 @@
 
 ; Defines the start of the game.
 (defn start [pos]
-  (new Game 0 (s/make pos [0.0 15.0]) []))
+  (new Game 0 (s/make pos [15.0 0.0]) []))
 
 ; Moves the snake.
 (defn update [dlt gm]
-  (update-in gm [:snake] (partial s/update dlt)))
+  (let [new-gm (update-in gm [:snake] (partial s/update dlt))]
+    (dbg new-gm)))
 
 ; ---------------------------------------
 ; Rendering

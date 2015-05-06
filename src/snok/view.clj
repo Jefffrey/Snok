@@ -14,10 +14,11 @@
 ; Makes the timer that updates the state and
 ; calls a repaint on the canvas.
 (defn make-timer [state canv update-fn]
-  (let [delta 100]
+  (let [delta 100
+        delta-s (double (/ delta 1000))]
     (timer
       (fn [_]
-        (swap! state (partial update-fn delta))
+        (swap! state (partial update-fn delta-s))
         (repaint! canv))
       :delay delta)))
 
@@ -32,7 +33,7 @@
     :resizable? false))
 
 ; Creates the frame and calls `update-fn` every once in a while
-; passing the delta time and the current state and expects the new state
+; passing the delta time (in seconds) and the current state and expects the new state
 ; in return. The `draw-fn` is then called with the current context and
 ; current state in order to draw the state.
 (defn main-loop [update-fn draw-fn ini-state]

@@ -1,8 +1,8 @@
 (ns snok.snake
   (:require 
     [snok.vector :as v]
-    [snok.debug :only (dbg)]
-    [seesaw.graphics :as ss]))
+    [seesaw.graphics :as ss])
+  (:use [snok.debug :only (dbg)]))
 
 ; ---------------------------------------
 ; Records
@@ -11,7 +11,8 @@
 (defrecord Snake
   [segments         ; list of points
    direction        ; versor * speed (pixels/s)
-   steering-angle]) ; angle or rotation in radians
+   steering-angle   ; angle or rotation in radians/s
+   angle-factor])   ; +1 if right, -1 if left, 0 if forward
 
 ; ---------------------------------------
 ; Logic
@@ -19,17 +20,16 @@
 
 ; Constructor.
 (defn make [pos dir]
-  (new Snake [pos] dir 0.17))
+  (new Snake [pos] dir 0.17 0))
 
 ; Changes the direction of the snake
 ; to its left.
-(defn direct-right [s]
-  (update-in s [:direction] (partial v/rotated (:steering-angle s))))
-
-; Changes the direction of the snake
-; to its right.
-(defn direct-left [s]
-  (update-in s [:direction] (partial v/rotated (:steering-angle (- s)))))
+(defn direct [d s]
+  (let [ang 
+    (case d
+      :left (- 1) 
+      :right 1)]
+    (update-in s [:angle-factor])))
 
 ; Returns the versor of the last segment.
 (defn last-versor [s]
@@ -52,13 +52,20 @@
     (fn [segs]
       (into [] (cons pos segs)))))
 
+; Rotates the head 
+(defn rotate-head [dlt snk]
+  (let [ang (* (:steering-angle snk) (:angle-factor snk) dlt)]
+    (if (not= ang 0.0)
+      (update-in snk :direction (partial v/rotated ang))
+      snk)))
+
 ; Moves the snake head of the amount of seconds
 ; necessary.
 (defn move-head [dlt snk]
   (let [segs (:segments snk)
         dir (:direction snk)
         head (first segs)
-        next-head (v/vector-sum head (v/vector-mul dir (double (/ dlt 1000))))]
+        next-head (v/vector-sum head (v/vector-mul dir dlt))]
     (if (= (last-versor snk) (v/normalized dir))
       (replace-head next-head snk)
       (add-head next-head snk))))
@@ -68,7 +75,7 @@
 ; Performs the necessary operations for
 ; an update.
 (defn update [dlt snk]
-  (move-head dlt snk))
+  (move-head dlt (rotate-head dlt snk)))
 
 ; ---------------------------------------
 ; Rendering
