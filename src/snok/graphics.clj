@@ -3,6 +3,7 @@
 
 ; Graphical configurations.
 (def snake-radius 10)
+
 (def body-stroke
   (stroke 
     :width snake-radius
@@ -11,12 +12,8 @@
 
 (def body-style 
   (style 
-    :foreground :grey 
+    :foreground :white 
     :stroke body-stroke))
-
-(def head-style
-  (style
-    :background :blue))
 
 ; Draws the line that represents
 ; the snake.
@@ -26,9 +23,7 @@
       (fn [[ax ay] [bx by]]
         (draw g (line ax ay bx by) body-style))
       (:segments snake)
-      (into [] (rest (:segments snake)))))
-  (let [[hx hy] (first (:segments snake))]
-    (draw g (circle hx hy (/ snake-radius 2)) head-style)))
+      (into [] (rest (:segments snake))))))
 
 ; Forwards the drawing of the snake.
 (defn draw-game [g snake]
