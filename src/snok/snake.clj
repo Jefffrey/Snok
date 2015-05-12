@@ -23,13 +23,13 @@
   (new Snake [pos] dir 0.17 0))
 
 ; Changes the direction of the snake
-; to its left.
+; to some direction.
 (defn direct [d s]
-  (let [ang 
+  (let [ang-fn 
     (case d
-      :left (- 1) 
-      :right 1)]
-    (update-in s [:angle-factor])))
+      :left  (fn [i] (- i 1)) 
+      :right (fn [i] (+ i 1)))]
+    (update-in s [:angle-factor] ang-fn)))
 
 ; Returns the versor of the last segment.
 (defn last-versor [s]
@@ -56,7 +56,7 @@
 (defn rotate-head [dlt snk]
   (let [ang (* (:steering-angle snk) (:angle-factor snk) dlt)]
     (if (not= ang 0.0)
-      (update-in snk :direction (partial v/rotated ang))
+      (update-in snk [:direction] (partial v/rotated ang))
       snk)))
 
 ; Moves the snake head of the amount of seconds

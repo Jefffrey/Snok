@@ -1,6 +1,7 @@
 (ns snok.view
   (:use [seesaw.core]
-        [seesaw.graphics]))
+        [seesaw.graphics]
+        [seesaw.keymap :only [map-key]]))
 
 ; Creates a canvas that draws the state.
 (defn make-canvas [state draw-fn]
@@ -22,6 +23,15 @@
         (repaint! canv))
       :delay delta)))
 
+; Takes a list in the form [key action] where
+; `key` is a valid key accepted by `map-key` and registers
+; that key to the updating function `action`.
+(defn register-actions [state target actions-list]
+  (doseq [[k a] actions-list]
+    (map-key target k 
+      (fn [_] (swap! state a)))))
+
+
 ; Generates the frames that contains the 
 ; canvas.
 (defn make-frame [canv]
@@ -36,9 +46,10 @@
 ; passing the delta time (in seconds) and the current state and expects the new state
 ; in return. The `draw-fn` is then called with the current context and
 ; current state in order to draw the state.
-(defn main-loop [update-fn draw-fn ini-state]
+(defn main-loop [update-fn draw-fn actions-list ini-state]
   (let [state (atom ini-state)
         canv (make-canvas state draw-fn)
         tmr (make-timer state canv update-fn)
         frm (make-frame canv)]
+    (register-actions state canv actions-list)
     (show! frm)))

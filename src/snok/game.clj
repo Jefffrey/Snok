@@ -24,6 +24,12 @@
   (let [new-gm (update-in gm [:snake] (partial s/update dlt))]
     (dbg new-gm)))
 
+(defn update-left [gm]
+  (update-in gm [:snake] (partial s/direct :left)))
+
+(defn update-right [gm]
+  (update-in gm [:snake] (partial s/direct :right)))
+
 ; ---------------------------------------
 ; Rendering
 ; ---------------------------------------
