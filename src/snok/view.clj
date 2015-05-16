@@ -51,5 +51,5 @@
         canv (make-canvas state draw-fn)
         tmr (make-timer state canv update-fn)
         frm (make-frame canv)]
-    (register-actions state canv actions-list)
+    (register-actions state frm actions-list)
     (show! frm)))
