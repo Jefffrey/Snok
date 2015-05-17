@@ -1,5 +1,6 @@
 *.swp
 .DS_Store
-elm.js
-elm-package.json
-elm-stuff/
+obj/
+*.o
+build.ninja
+*.pyc
