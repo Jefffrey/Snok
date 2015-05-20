@@ -33,7 +33,7 @@ ninja = ninja_syntax.Writer(open('build.ninja', 'w'))
 # Ninja variables
 ninja.variable('ninja_required_version', '1.5')
 ninja.variable('builddir', 'obj')
-ninja.variable('include_flags', '-Iinclude')
+ninja.variable('include_flags', '-Iinclude -Ideps/aid/include')
 ninja.variable('compiler_flags', '-Wall -Wextra -Wfatal-errors -Werror -std=c++14')
 ninja.variable('linker_flags', '-lSFML-graphics -lSFML-window -lSFML-system')
 ninja.variable('compiler', args.cxx)
@@ -54,8 +54,8 @@ obj_files = [object_file(cpp) for cpp in src_files]
 for cpp in src_files:
     ninja.build(object_file(cpp), 'cxx', inputs = cpp)
 
-# Snok executable build
-ninja.build('snok', 'link', inputs = obj_files)
+# Snok executables build
+ninja.build('client', 'link', inputs = obj_files)
 
 # Default build
-ninja.default('snok')
+ninja.default('client')

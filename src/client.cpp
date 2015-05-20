@@ -1,6 +1,6 @@
 #include <snok/view.hpp>
 
 int main() {
-    snok::view view(snok::size({0, 0}));
+    snok::view view(snok::size{600, 400});
     view.run();
 }

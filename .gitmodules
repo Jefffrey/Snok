@@ -1,0 +1,3 @@
+[submodule "deps/aid"]
+	path = deps/aid
+	url = https://github.com/Jefffrey/Aid.git
