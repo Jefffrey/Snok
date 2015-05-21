@@ -6,6 +6,7 @@
 
 namespace snok {
 
+    // Represents a client view of a given world.
     class view {
     public: 
 
