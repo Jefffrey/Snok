@@ -16,6 +16,8 @@ namespace snok {
     private:
 
         sf::RenderWindow window;
+        sf::Font font;
+        sf::Text text;
 
     };
 

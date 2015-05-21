@@ -55,7 +55,14 @@ for cpp in src_files:
     ninja.build(object_file(cpp), 'cxx', inputs = cpp)
 
 # Snok executables build
-ninja.build('client', 'link', inputs = obj_files)
+client_objs = list(obj_files)
+client_objs.remove('obj/src/server.o')
+
+server_objs = list(obj_files)
+server_objs.remove('obj/src/client.o')
+
+ninja.build('client', 'link', inputs = client_objs)
+ninja.build('server', 'link', inputs = server_objs)
 
 # Default build
-ninja.default('client')
+ninja.default(['client', 'server'])
